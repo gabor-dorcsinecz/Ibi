@@ -1,6 +1,12 @@
 
 GET     /                           controllers.HomeController.index()
 GET     /login                      controllers.HomeController.login()
+GET     /quiz/list                  controllers.QuizController.list()
+GET     /quiz/add                   controllers.QuizController.addShow()
+GET     /quiz/edit/@id              controllers.QuizController.edit(id)
++ nocsrf
+POST    /quiz/submit                controllers.QuizController.submit()
+
 
 GET     /initialize                 controllers.HomeController.initialize()
 

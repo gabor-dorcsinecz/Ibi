@@ -1,0 +1,27 @@
+@import model._
+@import controllers._
+
+@(quizlist:Seq[Quiz])
+
+
+@main("Quiz List") {
+
+<a href="@{routes.QuizController.addShow()}" class="button is-primary">Add new quiz</a>
+<table class="table">
+    <thead>
+    <tr>
+        <th>Question</th>
+        <th>Answers</th>
+    </tr>
+    </thead>
+    <tbody>
+    @for(quiz <- quizlist) {
+        <tr>
+            <td>@{quiz.question}</td>
+            <td>@{quiz.options.length}</td>
+            <td><a href="@{routes.QuizController.edit(quiz._id.stringify)}" class="button is-primary">Edit</a></td>
+        </tr>
+    }
+    </tbody>
+</table>
+}
