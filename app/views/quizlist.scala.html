@@ -1,12 +1,14 @@
 @import model._
 @import controllers._
 
-@(quizlist:Seq[Quiz])
+@(quizlist:Seq[Quiz], permission: PermissionLevel.PermissionLevel)
 
 
 @main("Quiz List") {
 
-<a href="@{routes.QuizController.insert()}" class="button is-primary">Add new quiz</a>
+@if(permission == PermissionLevel.Edit ){
+  <a href="@{routes.QuizController.insert()}" class="button is-primary">Add new quiz</a>
+}
 <table class="table">
     <thead>
     <tr>
@@ -19,19 +21,23 @@
         <tr>
             <td>
                 <dt class="title is-4">@{quiz.question}</dt>
+                @if(permission == PermissionLevel.Edit || permission == PermissionLevel.View){
                 <dd>
                     <ol class="ml-6">
                     @for(i <- 0 until quiz.options.filter(_.length > 0).length){
                         @if(quiz.correctAnswer-1 == i) {
-                        <li class="has-text-weight-bold has-text-primary">@{quiz.options(i)}</li>
+                            <li class="has-text-weight-bold has-text-primary">@{quiz.options(i)}</li>
                         } else {
                             <li>@{quiz.options(i)}</li>
                         }
                     }
                     </ol>
                 </dd>
+                }
             </td>
-            <td><a href="@{routes.QuizController.update(quiz._id.stringify)}" class="button is-primary">Edit</a></td>
+            @if(permission == PermissionLevel.Edit) {
+                <td><a href="@{routes.QuizController.update(quiz._id.stringify)}" class="button is-primary">Edit</a></td>
+            }
         </tr>
     }
     </tbody>

@@ -32,8 +32,8 @@ class HomeController @Inject()(
   def initialize() = Action.async { implicit request =>
     for {
       _ <- userRepo.create(User("Admin", "1234", PermissionLevel.Edit))
-      _ <- userRepo.create(User("Game Controller","1234", PermissionLevel.View))
-      _ <- userRepo.create(User("Quiz Participant", "1234",PermissionLevel.Restricted))
+      _ <- userRepo.create(User("Viewer","1234", PermissionLevel.View))
+      _ <- userRepo.create(User("Restricted", "1234",PermissionLevel.Restricted))
     } yield Redirect(routes.HomeController.index())
   }
 
@@ -78,29 +78,3 @@ object HomeController {
 //  }
 }
 
-class AuthenticatedRequest[A](val userId: String, request: Request[A]) extends WrappedRequest[A](request)
-
-class AuthenticatedActionBuilder @Inject()(parser: BodyParsers.Default)(implicit ec: ExecutionContext)
-  extends ActionBuilderImpl(parser) {
-  override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] = {
-    request.session.get(HomeController.sessionId) match {
-      case Some(id) =>
-        block(new AuthenticatedRequest[A](id, request))
-      case _ =>
-        Future.successful(Results.Redirect(routes.HomeController.login()))
-    }
-  }
-}
-
-case class SecuredControllerComponents @Inject()(authenticatedActionBuilder: AuthenticatedActionBuilder,
-                                                 actionBuilder: DefaultActionBuilder,
-                                                 parsers: PlayBodyParsers,
-                                                 messagesApi: MessagesApi,
-                                                 langs: Langs,
-                                                 fileMimeTypes: FileMimeTypes,
-                                                 executionContext: scala.concurrent.ExecutionContext
-                                                ) extends ControllerComponents
-
-class SecuredController @Inject()(scc: SecuredControllerComponents) extends AbstractController(scc) {
-  def AuthenticatedAction: AuthenticatedActionBuilder = scc.authenticatedActionBuilder
-}
