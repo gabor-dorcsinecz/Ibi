@@ -1,11 +1,14 @@
 
 GET     /                           controllers.HomeController.index()
-GET     /login                      controllers.HomeController.login()
-GET     /quiz/list                  controllers.QuizController.list()
-GET     /quiz/add                   controllers.QuizController.addShow()
-GET     /quiz/edit/@id              controllers.QuizController.edit(id)
+GET     /login                      controllers.HomeController.login(message:String ?= "")
 + nocsrf
-POST    /quiz/submit                controllers.QuizController.submit()
+POST    /login                     controllers.HomeController.loginSubmit()
+
+GET     /quiz/list                  controllers.QuizController.list()
+GET     /quiz/add                   controllers.QuizController.insert()
+GET     /quiz/edit/@id              controllers.QuizController.update(id)
++ nocsrf
+POST    /quiz/submit/@isUpdate       controllers.QuizController.submit(isUpdate:Boolean)
 
 
 GET     /initialize                 controllers.HomeController.initialize()

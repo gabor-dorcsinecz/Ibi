@@ -32,6 +32,10 @@ class UserRepo @Inject()(
     collection.flatMap(_.find(BSONDocument("_id" -> id), Option.empty[User]).one[User])
   }
 
+  def findUser(user:User):Future[Option[User]] = {
+    collection.flatMap(_.find(BSONDocument("username" -> user.username, "password" -> user.password),Option.empty[User]).one[User])
+  }
+
   def create(user: User): Future[WriteResult] = {
     collection
       .flatMap(_.insert(ordered = false)

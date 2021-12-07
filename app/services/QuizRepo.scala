@@ -2,11 +2,13 @@ package services
 
 import model.Quiz
 import model.Quiz._
+import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.bson.{BSONDocumentReader, BSONDocumentWriter, Macros, BSONDocument, BSONObjectID}
+import reactivemongo.api.bson.{BSONDocument, BSONDocumentReader, BSONDocumentWriter, BSONObjectID, Macros}
 import reactivemongo.api.bson.collection.BSONCollection
 import reactivemongo.api.{Cursor, ReadPreference}
 import reactivemongo.api.commands.WriteResult
+
 import javax.inject._
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -38,12 +40,25 @@ class QuizRepo @Inject()(
         .one(quiz))
   }
 
-  def update(id: BSONObjectID, quiz: Quiz):Future[WriteResult] = {
-
-    collection.flatMap(
-      _.update(ordered = false)
-        .one(BSONDocument("_id" -> id), quiz)
-    )
+  def update(quiz: Quiz) = {
+    //collection.flatMap(_.update(ordered = false).one(BSONDocument("_id" -> quiz._id), quiz))
+    //collection.flatMap(_.findAndUpdate(BSONDocument("_id" -> quiz._id), quiz))
+    //collection.flatMap(_.update(ordered = false).one(BSONDocumentWriter(BSONDocument.quiz)))
+      //collection.flatMap(_.update(ordered = false).element()one(BSONDocument("_id" -> quiz._id), BSONDocument("$set" -> BSONDocumentWriter(quiz))))
+//    collection.flatMap(_.findAndUpdate(
+//      selector = Json.obj("_id" -> quiz._id.stringify),
+//      update = Json.obj("$set" -> Json.toJson(quiz)),
+//      upsert = true
+//    ))
+//    collection.flatMap(_.findAndUpdate(
+//      BSONDocument("_id" -> quiz._id),
+//      BSONDocument("$set" -> BSONDocument(
+//        "question" -> quiz.question,
+//        "options" -> quiz.options,
+//        "correctAnswer" -> 99)),
+//      upsert = true
+//    ))
+    collection.flatMap(_.findAndUpdate(BSONDocument("_id" -> quiz._id), quiz))
   }
 
   def delete(id: BSONObjectID):Future[WriteResult] = {

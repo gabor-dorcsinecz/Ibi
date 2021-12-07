@@ -10,36 +10,40 @@ import scala.concurrent.{ExecutionContext, Future}
 import views.html._
 import play.api.data.Forms.{mapping, number, seq, text}
 import play.api.data._
+import play.mvc.Security.AuthenticatedAction
 
 
 @Singleton
 class QuizController @Inject()(
                                 val quizRepo: QuizRepo,
-                                components: ControllerComponents
+                                val scc: SecuredControllerComponents,
                               )(
                                 implicit val executionContext: ExecutionContext
-                              ) extends AbstractController(components) with play.api.i18n.I18nSupport {
+                              ) extends  SecuredController(scc: SecuredControllerComponents) with play.api.i18n.I18nSupport {
 
-  def list() = Action.async { implicit request =>
+  def list() = AuthenticatedAction.async { implicit request =>
+    AuthenticatedAction
     quizRepo
       .findAll()
       .map(quizes => Ok(quizlist(quizes)))
   }
 
-  def addShow() = Action { implicit request =>
-    val newQuiz = Quiz("", List.empty, 0)
+  def insert() = AuthenticatedAction { implicit request =>
+    val newQuiz = Quiz("", List("","","","",""), 0)
     val newForm = QuizController.quizForm.fill(newQuiz)
-    Ok(quizedit(newForm))
+
+
+    Ok(quizedit(newForm, false))
   }
 
-    def edit(id:String) = Action.async {implicit request =>
+    def update(id:String) = AuthenticatedAction.async { implicit request =>
       BSONObjectID.parse(id).map(bsonId =>
         quizRepo
           .findOne(bsonId)
           .map(optobj => optobj match {
             case Some(obj) =>
               val filledForm = QuizController.quizForm.fill(obj)
-              Ok(quizedit(filledForm))
+              Ok(quizedit(filledForm, true))
             case None =>
               BadRequest("Could not find the object with the id given")
           }
@@ -47,18 +51,17 @@ class QuizController @Inject()(
       ).getOrElse(Future.successful(BadRequest("Could Not Parse BSONId")))
     }
 
-  def submit() = Action.async { implicit request =>
+  def submit(isUpdate:Boolean) = AuthenticatedAction.async { implicit request =>
     QuizController.quizForm
       .bindFromRequest()
       .fold(
-        withErrors => {
-          println(s"Form Errors: $withErrors")
-          Future.successful(BadRequest("Failed"))
-        } ,
-        ok =>
-          quizRepo
-            .create(ok)
-            .map(_ => Redirect(routes.QuizController.list()))
+        withErrors =>
+          Future.successful(BadRequest("Failed")),
+        formOk =>
+          (isUpdate match {
+            case true => quizRepo.update(formOk)
+            case false => quizRepo.create(formOk)
+          }).map{_ => Redirect(routes.QuizController.list())}
       )
   }
 
@@ -74,7 +77,6 @@ object QuizController {
       "correct" -> number.verifying(a => a >= 0 && a < 5),
       "_id" -> text
     )((q, o, c, id) => {
-      println("Form apply options: " + o)
       Quiz(q, o.toList, c, BSONObjectID.parse(id).getOrElse(BSONObjectID.generate()))
     })(
       q => Option((q.question, q.options, q.correctAnswer, q._id.toString()))

@@ -6,20 +6,32 @@
 
 @main("Quiz List") {
 
-<a href="@{routes.QuizController.addShow()}" class="button is-primary">Add new quiz</a>
+<a href="@{routes.QuizController.insert()}" class="button is-primary">Add new quiz</a>
 <table class="table">
     <thead>
     <tr>
         <th>Question</th>
-        <th>Answers</th>
+        <th>Operations</th>
     </tr>
     </thead>
     <tbody>
     @for(quiz <- quizlist) {
         <tr>
-            <td>@{quiz.question}</td>
-            <td>@{quiz.options.length}</td>
-            <td><a href="@{routes.QuizController.edit(quiz._id.stringify)}" class="button is-primary">Edit</a></td>
+            <td>
+                <dt class="title is-4">@{quiz.question}</dt>
+                <dd>
+                    <ol class="ml-6">
+                    @for(i <- 0 until quiz.options.filter(_.length > 0).length){
+                        @if(quiz.correctAnswer-1 == i) {
+                        <li class="has-text-weight-bold has-text-primary">@{quiz.options(i)}</li>
+                        } else {
+                            <li>@{quiz.options(i)}</li>
+                        }
+                    }
+                    </ol>
+                </dd>
+            </td>
+            <td><a href="@{routes.QuizController.update(quiz._id.stringify)}" class="button is-primary">Edit</a></td>
         </tr>
     }
     </tbody>

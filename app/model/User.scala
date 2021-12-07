@@ -7,6 +7,7 @@ import model.PermissionLevel._
 
 final case class User(
                  username: String,
+                 password:String,
                  permission: PermissionLevel.PermissionLevel,
                  _id: BSONObjectID = BSONObjectID.generate()
                )
